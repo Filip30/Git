@@ -1,0 +1,611 @@
+use master 
+go
+
+if exists (select * from sys.databases where name = 'Prvenstvo')
+	drop database Prvenstvo
+go
+
+create database Prvenstvo 
+go
+use Prvenstvo
+go
+
+create table Grupa 
+(GrupaID int identity (1,1) not null ,
+ Naziv nvarchar (10) not null)
+
+Create table TipTrenera(
+TipTreneraID int identity(1,1) not null,
+Vrsta nvarchar(50) not null)
+
+Create table Drzava(
+DrzavaID int identity(1,1) not null,
+Mesto nvarchar(50) not null)
+
+Create table Pozicija(
+PozicijaID int identity(1,1) not null,
+NazivPozicije nvarchar(20) not null)
+
+Create table Grad(
+GradID int identity(1,1) not null,
+Vrednost nvarchar(50) not null,
+DrzavaID int not null)
+
+Create table Hala(
+HalaID int identity(1,1) not null,
+Kapacitet int not null,
+Naziv nvarchar(50) not null,
+GradID int not null)
+
+Create table Igrac(
+IgracID int identity(1,1) not null,
+Visina int not null,
+Tezina int not null,
+BrojDresa int not null,
+OsobaID int not null)
+
+Create table Osoba (
+OsobaID int identity (1,1) not null,
+Ime nvarchar (20) not null,
+Prezime nvarchar (20) not null,
+JMBG nvarchar (20) not null,
+ReprezentacijaID int not null)
+
+
+Create table Reprezentacija(
+ReprezentacijaID int identity(1,1) not null,
+Vrednost nvarchar(20) not null,
+GrupaID int not null)
+
+Create table Trener(
+TrenerID int identity(1,1) not null,
+OsobaID int not null,
+Licenca nvarchar (20) not null,
+TipTreneraID int not null)
+
+Create table Utakmica(
+UtakmicaID int identity(1,1) not null,
+DomacinID int not null,
+GostID int not null,
+HalaID int not null,
+Datum date not null,
+Vreme char(10) not null,
+Rezultat nvarchar(10) not null)
+
+Create table IgracPozicija(
+IgracID int not null,
+OsobaID int not null,
+PozicijaID int not null,
+Vrednost nvarchar (10) not null)
+
+Alter table Grupa
+Add constraint PK_Grupa Primary key (GrupaID)
+
+Alter table TipTrenera
+Add constraint PK_TipTrenera Primary key (TipTreneraID)
+
+Alter table Drzava
+Add constraint PK_Drzava Primary key (DrzavaID)
+
+Alter table Pozicija
+Add constraint PK_Pozicija Primary key (PozicijaID)
+
+Alter table Grad
+Add constraint PK_Grad Primary key (GradID)
+
+Alter table Hala
+Add constraint PK_Hala Primary key (HalaID)
+
+alter table Trener
+add constraint PK_Trener primary key (OsobaID,TipTreneraID,TrenerID)
+
+
+Alter table Utakmica
+Add constraint PK_Utakmica Primary key (UtakmicaID,DomacinID,GostID)
+
+alter table Osoba 
+add constraint PK_Osoba primary key (OsobaID)
+
+alter table Reprezentacija
+add constraint PK_Reprezentacija primary key (ReprezentacijaID)
+
+alter table Igrac
+add constraint PK_Igrac primary key (OsobaID,IgracID)
+
+alter table IgracPozicija
+add constraint PK_IgracPozicija primary key (IgracID,OsobaID,PozicijaID)
+
+
+alter table Grad 
+add constraint FK_Grad foreign key (DrzavaID) references Drzava (DrzavaID)
+
+alter table Hala 
+add constraint FK_Hala foreign key (GradID) references Grad (GradID)
+
+alter table Igrac
+add constraint FK_Igrac foreign key (OsobaID) references Osoba (OsobaID)
+
+alter table Osoba 
+add constraint FK_Osoba foreign key  (ReprezentacijaID) references Reprezentacija (ReprezentacijaID)
+
+alter table Reprezentacija
+add constraint FK_Reprezentacija foreign key (GrupaID) references Grupa (GrupaID)
+
+alter table Trener
+add constraint FK_TrenerOsoba foreign key (OsobaID) references Osoba (OsobaID) 
+
+
+alter table Trener
+add constraint FK_TrenerTip foreign key (TipTreneraID) references TipTrenera (TipTreneraID) 
+
+
+Alter table Utakmica
+Add constraint FK_UtakmicaH Foreign key (HalaID) References Hala(HalaID)
+
+Alter table Utakmica
+Add constraint FK_UtakmicaD Foreign key (DomacinID) References Reprezentacija(ReprezentacijaID)
+
+Alter table Utakmica
+Add constraint FK_UtakmicaG Foreign key (GostID) References Reprezentacija(ReprezentacijaID)
+
+alter table IgracPozicija
+add constraint FK_IgracPozicija_Igrac foreign key (OsobaID,IgracID) references Igrac (OsobaID,IgracID)
+
+alter table IgracPozicija
+add constraint FK_IgracPozicija_Pozicija foreign key (PozicijaID) references Pozicija (PozicijaID)
+go
+create procedure Ins_Grupa(
+@naziv nvarchar (255)
+)
+as
+begin
+insert into Grupa (naziv)
+values (@Naziv)
+end 
+go
+
+create procedure Upd_Grupa
+(
+@Naziv nvarchar (255),
+@GrupaID int
+)
+
+as begin
+update Grupa 
+set Naziv=@Naziv 
+where GrupaID=@GrupaID
+end
+go
+
+
+create procedure Del_Grupa
+(
+@GrupaID int
+)
+as
+begin
+delete from Grupa
+where GrupaID=@GrupaID
+end
+go
+
+create procedure Ins_TipTrenera
+(
+@Vrsta nvarchar (255)
+)
+as begin
+insert into TipTrenera(Vrsta)
+values (@Vrsta)
+end 
+go
+
+create procedure Upd_TipTrenera
+(
+@TipTreneraID int,
+@Vrsta nvarchar (255)
+)
+as begin
+update TipTrenera
+set Vrsta=@Vrsta
+where TipTreneraID=@TipTreneraID
+end 
+go
+
+create procedure Del_TipTrenera
+(
+@TipTreneraID int
+)
+as begin
+delete from TipTrenera
+where TipTreneraID=@TipTreneraID
+end 
+go
+
+Create procedure INS_Drzava(
+@Mesto nvarchar(50))
+As
+Begin
+Insert into Drzava(Mesto) values (@Mesto)
+End
+Go
+
+Create procedure UPD_Drzava(
+@DrzavaID int,
+@Mesto nvarchar(50))
+As
+Begin
+UPDATE Drzava SET Mesto=@Mesto Where DrzavaID=@DrzavaID
+End
+Go
+
+
+Create procedure DEL_Drzava(
+@DrzavaID int)
+As
+Begin
+Begin transaction
+DELETE Drzava Where DrzavaID=@DrzavaID
+End
+Go
+
+
+Create procedure INS_Pozicija(
+@NazivPozicije nvarchar(20))
+As
+Begin
+Insert into Pozicija(NazivPozicije) values (@NazivPozicije)
+End
+Go
+
+Create procedure UPD_Pozicija(
+@PozicijaID int,
+@NazivPozicije nvarchar(20))
+As
+Begin
+UPDATE Pozicija SET NazivPozicije=@NazivPozicije Where PozicijaID=@PozicijaID
+End
+Go
+
+Create procedure DEL_Pozicija(
+@PozicijaID int)
+As
+Begin
+DELETE Pozicija Where PozicijaID=@PozicijaID
+End
+Go
+
+Create procedure INS_Grad(
+@Vrednost nvarchar(50),
+@DrzavaID int)
+As
+Begin
+Insert into Grad(Vrednost,DrzavaID) values (@Vrednost,@DrzavaID)
+End
+Go
+
+Create procedure UPD_Grad(
+@GradID int,
+@Vrednost nvarchar(50),
+@DrzavaID int)
+As
+Begin
+UPDATE Grad SET Vrednost=@Vrednost,DrzavaID=@DrzavaID Where GradID=GradID
+End
+Go
+
+Create procedure DEL_Grad(
+@GradID int)
+As
+Begin
+DELETE Grad Where GradID=@GradID
+End
+Go
+
+Create procedure INS_Hala(
+@Naziv nvarchar(50),
+@Kapacitet int ,
+@GradID int)
+As
+Begin
+Insert into Hala(Naziv,GradID,Kapacitet) values (@Naziv,@GradID,@Kapacitet)
+End
+Go
+
+Create procedure UPD_Hala(
+@HalaID int,
+@Naziv nvarchar(50),
+@Kapacitet int,
+@GradID int)
+As
+Begin
+UPDATE Hala SET Naziv=@Naziv,GradID=GradID,Kapacitet=@Kapacitet Where HalaID=@HalaID
+End
+Go
+
+Create procedure DEL_Hala(
+@HalaID int)
+As
+Begin
+DELETE Hala Where HalaID=@HalaID
+End
+Go
+
+Create procedure INS_Igrac(
+@Visina int,
+@Tezina int,
+@BrojDresa int,
+@OsobaID int)
+As
+Begin
+Insert into Igrac(Visina,Tezina,BrojDresa,OsobaID) values (@Visina,@Tezina,@BrojDresa,@OsobaID)
+End
+Go
+
+Create procedure UPD_Igrac(
+@IgracID int,
+@Visina int,
+@Tezina int,
+@BrojDresa int,
+@OsobaID int
+)
+As
+Begin
+UPDATE Igrac 
+SET Visina=@Visina,Tezina=@Tezina,BrojDresa=@BrojDresa 
+Where IgracID=@IgracID and OsobaID=@OsobaID
+End
+Go
+
+Create procedure DEL_Igrac(
+@IgracID int,
+@OsobaID int)
+As
+Begin
+DELETE Igrac Where IgracID=@IgracID and OsobaID=@OsobaID
+End
+Go
+
+create procedure ins_Osoba(
+@Ime nvarchar (255),
+@Prezime nvarchar (255),
+@JMBG nvarchar (255),
+@ReprezentacijaID int)
+as begin
+insert into Osoba(Ime,Prezime,JMBG,ReprezentacijaID)
+values (@Ime,@Prezime,@JMBG,@ReprezentacijaID)
+end 
+go
+
+create procedure upd_Osoba(
+@OsobaID int,
+@Ime nvarchar (255),
+@Prezime nvarchar (255),
+@JMBG nvarchar (255),
+@ReprezentacijaID int
+)
+as 
+begin
+update Osoba
+set Ime=@Ime,
+Prezime=@Prezime ,
+JMBG=@JMBG ,
+ReprezentacijaID=@ReprezentacijaID 
+Where OsobaID=@OsobaID
+end 
+go
+
+create procedure del_Osoba(
+@OsobaID int)
+as
+begin
+delete from Osoba
+where OsobaID=@OsobaID
+end 
+go
+
+Create procedure INS_Reprezentacija(
+@Vrednost nvarchar(255),
+@GrupaID int)
+As
+Begin
+Insert into Reprezentacija(Vrednost,GrupaID) values (@Vrednost,@GrupaID)
+End
+Go
+
+Create procedure UPD_Reprezentacija(
+@ReprezentacijaID int,
+@Vrednost int,
+@GrupaID int)
+As
+Begin
+UPDATE Reprezentacija SET Vrednost=@Vrednost,GrupaID=@GrupaID Where ReprezentacijaID=@ReprezentacijaID
+End
+Go
+
+Create procedure DEL_Reprezentacija(
+@ReprezentacijaID int)
+As
+Begin
+DELETE Reprezentacija Where ReprezentacijaID=ReprezentacijaID
+End
+Go
+
+Create procedure INS_Trener(
+@Licenca nvarchar(255),
+@OsobaID int,
+@TipTreneraID int)
+As
+Begin
+Insert into Trener(Licenca,OsobaID,TipTreneraID) values (@Licenca,@OsobaID,@TipTreneraID)
+End
+Go
+
+Create procedure UPD_Trener(
+@TrenerID int,
+@OsobaID int ,
+@TipTreneraID int,
+@Licenca nvarchar (255))
+As
+Begin
+UPDATE Trener SET Licenca=@Licenca Where TrenerID=@TrenerID and TipTreneraID=@TipTreneraID and OsobaID=@OsobaID
+End
+Go
+
+Create procedure DEL_Trener(
+@TrenerID int,
+@OsobaID int,
+@TipTreneraID int)
+As
+Begin
+DELETE Trener Where TrenerID=@TrenerID and OsobaID=@OsobaID and TipTreneraID=@TipTreneraID
+End
+Go
+
+Create procedure INS_Utakmica(
+@DomacinID int,
+@GostID int,
+@HalaID int,
+@Datum date,
+@Vreme char(5),
+@Rezultat nvarchar(10)
+)
+As
+Begin
+Insert into Utakmica(DomacinID,GostID,HalaID,Datum,Vreme,Rezultat) values (@DomacinID,@GostID,@HalaID,@Datum,@Vreme,@Rezultat)
+End
+Go
+
+Create procedure UPD_Utakmica(
+@UtakmicaID int,
+@DomacinID int,
+@GostID int,
+@HalaID int,
+@Datum smalldatetime,
+@Vreme char(5),
+@Rezultat nvarchar(10))
+As
+Begin
+UPDATE Utakmica SET DomacinID=@DomacinID,GostID=@GostID,HalaID=@HalaID,Datum=@Datum,Vreme=@Vreme,Rezultat=@Rezultat Where UtakmicaID=@UtakmicaID
+End
+Go
+
+Create procedure DEL_Utakmica(
+@UtakmicaID int)
+As
+Begin
+DELETE Utakmica Where UtakmicaID=@UtakmicaID
+End
+Go
+
+create procedure INS_IgracPozicija(
+@IgracID int,
+@OsobaID int,
+@PozicijaID int,
+@Vrednost nvarchar (255))
+as begin
+insert into IgracPozicija(IgracID,OsobaID,PozicijaID,Vrednost) values (@IgracID,@OsobaID,@PozicijaID,@Vrednost)
+end
+go
+
+create procedure UPD_IgracPozicija(
+@IgracID int,
+@OsobaID int,
+@PozicijaID int,
+@Vrednost nvarchar (255))
+as begin
+update IgracPozicija set IgracID=@IgracID,OsobaID=@OsobaID,PozicijaID=@PozicijaID,Vrednost=@Vrednost where IgracID=@IgracID and OsobaID=@OsobaID and PozicijaID=@PozicijaID
+end 
+go
+
+create procedure DEL_IgracPozicija(
+@IgracID int,
+@OsobaID int,
+@PozicijaID int)
+as begin
+delete IgracPozicija where IgracID=@IgracID and OsobaID=@OsobaID and PozicijaID=@PozicijaID
+end 
+go
+
+Execute INS_Grupa 'A';
+Execute INS_Grupa 'B';
+
+Execute INS_TipTrenera 'Glavni trener';
+Execute INS_TipTrenera 'Pomocni trener';
+Execute INS_TipTrenera 'Kondicioni trener';
+
+EXECute INS_Drzava 'Srbija';
+EXECute INS_Drzava 'Španija';
+Execute INS_Drzava 'Francuska';
+EXECute INS_Drzava 'Rusija';
+
+Execute INS_Pozicija 'Plejmejker';
+Execute INS_Pozicija 'Bek';
+Execute INS_Pozicija 'Krilo';
+Execute INS_Pozicija 'Krilni centar';
+Execute INS_Pozicija 'Centar';
+
+Execute INS_Grad 'Beograd',1;
+Execute INS_Grad 'Madrid',2;
+Execute INS_Grad 'Pariz',3;
+Execute INS_Grad 'Moskva',4;
+
+Execute INS_Hala 'Pionir',7000,1;
+Execute INS_Hala 'SanMartin',10000,2;
+Execute INS_Hala 'Bersi',15000,3;
+Execute INS_Hala 'CSKAarena',9000,4;
+
+Exec INS_Reprezentacija 'Srbija',1;
+Exec INS_Reprezentacija 'Španija',2;
+Exec INS_Reprezentacija 'Francuska',1;
+Exec INS_Reprezentacija 'Rusija',2;
+
+execute ins_Osoba 'Milos','Teodosic',1205987265514,1;
+execute ins_Osoba 'Stefan','Markovic',1312986554499,1;
+execute ins_Osoba 'Nemanja','Bjelica',1203989669988,1;
+execute ins_Osoba  'Havier','Navaro',2302980159632,2;
+execute ins_Osoba  'Felipe','Reyes',1112984123684,2;
+execute ins_Osoba  'Paul','Gasol',1509980232214,2;
+execute ins_Osoba  'Antoine','Diot',3010975220011,3;
+execute ins_Osoba  'Joffrey','Lauvergne',3101990665544,3;
+execute ins_Osoba  'Florent','Pietrus',0605988554411,3;
+execute ins_Osoba  'Sergey','Karasev',0302994152015,4;
+execute ins_Osoba  'Dmitri','Sokolov',2010992020203,4;
+execute ins_Osoba  'Sergei','Monia',1211990203040,4;
+
+execute INS_Igrac 195,90,4,1;
+execute INS_Igrac 194,92,9,2;
+execute INS_Igrac 199,99,8,3;
+execute INS_Igrac 192,84,5,4;
+execute INS_Igrac 193,84,6,5;
+execute INS_Igrac 196,88,7,6;
+execute INS_Igrac 198,92,11,7;
+execute INS_Igrac 197,93,12,8;
+execute INS_Igrac 191,98,15,9;
+execute INS_Igrac 190,94,18,10;
+execute INS_Igrac 188,92,20,11;
+execute INS_Igrac 189,91,41,12;
+
+Exec INS_Trener 'Ima',1,1;
+Exec INS_Trener 'Ima',2,2;
+Exec INS_Trener 'Ima',3,3;
+Exec INS_Trener 'Ima',4,1;
+Exec INS_Trener 'Nema',5,3;
+
+Exec INS_Utakmica 1,2,1,'2017-03-01','21:00','85:72';
+Exec INS_Utakmica 3,4,2,'2017-03-02','22:00','68:53';
+Exec INS_Utakmica 1,3,3,'2017-03-03','18:00','79:64';
+Exec INS_Utakmica 2,4,4,'2017-03-04','20:00','72:75';
+
+exec INS_IgracPozicija 1,1,1,'igra';
+exec INS_IgracPozicija 2,2,1,'igra';
+exec INS_IgracPozicija 3,3,4,'rezerva';
+exec INS_IgracPozicija 4,4,5,'igra';
+exec INS_IgracPozicija 5,5,2,'igra';
+exec INS_IgracPozicija 6,6,2,'rezerva';
+exec INS_IgracPozicija 7,7,3,'igra';
+exec INS_IgracPozicija 8,8,4,'igra';
+exec INS_IgracPozicija 9,9,4,'rezerva';
+exec INS_IgracPozicija 10,10,5,'igra';
+exec INS_IgracPozicija 11,11,3,'igra';
+exec INS_IgracPozicija 12,12,2,'igra';
+
